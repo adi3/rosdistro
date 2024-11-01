@@ -8,6 +8,12 @@ from .fold_block import Fold
 
 
 def test():
+    """
+    Checks all YAML files in the 'rosdep' directory for issues using the `check_rosdep`
+    function. It skips non-YAML files and reports any errors found, providing a
+    cleanup option if the check fails.
+
+    """
     files = os.listdir('rosdep')
 
     with Fold() as fold:

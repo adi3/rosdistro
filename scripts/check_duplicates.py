@@ -39,6 +39,16 @@ from rosdep2.sources_list import *
 
 
 def create_default_sources():
+    """
+    Loads and processes configuration files to create a list of data sources for
+    accessing package dependencies.
+
+    Returns:
+        List[CachedDataSource]: A list of objects that represent cached data
+        sources, each containing information about a ROS distribution or a rosdep
+        data source.
+
+    """
     sources = []
     # get all rosdistro files
     basedir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
@@ -75,6 +85,24 @@ def create_default_sources():
 
 
 def check_duplicates(sources, os_name, os_codename):
+    """
+    Checks for duplicate dependencies in a ROS (Robot Operating System) package
+    by comparing dependencies across different operating system versions. It returns
+    True if no duplicates are found, False otherwise.
+
+    Args:
+        sources (List[Source]): Used to load dependencies from ROS packages, where
+            each `Source` object contains information about a package.
+        os_name (str): Used to determine whether a dependency is defined for a
+            specific operating system.
+        os_codename (str): Used to check for duplicate dependencies in the ROSDep
+            database. It is checked in addition to the `os_name` parameter, which
+            is likely the full name of the operating system.
+
+    Returns:
+        bool: True if there are no duplicate dependencies, False otherwise.
+
+    """
     # output debug info
     print('checking sources')
     for source in sources:
@@ -113,6 +141,20 @@ def check_duplicates(sources, os_name, os_codename):
 
 
 def main(infile):
+    """
+    Checks for duplicate dependencies in ROS packages. It reads YAML files, creates
+    data sources, and uses a matcher to identify duplicate dependencies across
+    different operating systems.
+
+    Args:
+        infile (List[str]): Expected to contain a list of filenames. These filenames
+            are used to load ROSDEP data from YAML files.
+
+    Returns:
+        bool: `True` if no duplicate sources are found for all specified tags, and
+        `False` otherwise.
+
+    """
     sources = create_default_sources()
     matcher = DataSourceMatcher.create_default()
 

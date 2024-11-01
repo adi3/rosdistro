@@ -8,6 +8,17 @@ import yaml
 
 
 def convert_yaml_to_rosinstall(yaml_file, rosinstall_file):
+    """
+    Converts a YAML file to a ROSinstall file by loading the YAML data, converting
+    it to ROSinstall format, and then dumping the converted data to a new ROSinstall
+    file.
+
+    Args:
+        yaml_file (str): Representing the path to a YAML file.
+        rosinstall_file (str): Designated to specify the path to the output file
+            where the converted ROSinstall data will be written.
+
+    """
     data = yaml.load(open(yaml_file, 'r'))
     data = convert_yaml_data_to_rosinstall_data(data)
     with open(rosinstall_file, 'w') as out_file:
@@ -15,6 +26,22 @@ def convert_yaml_to_rosinstall(yaml_file, rosinstall_file):
 
 
 def convert_yaml_data_to_rosinstall_data(data):
+    """
+    Converts YAML data representing repositories into ROSinstall data format, which
+    is a standardized format for specifying dependencies in ROS projects. It
+    iterates over repository names, extracts relevant information, and constructs
+    ROSinstall data.
+
+    Args:
+        data (Dict[str, Any]): Expected to have a specific structure, including a
+            key named 'repositories', which contains another dictionary with names
+            of repositories as keys and their corresponding values as values.
+
+    Returns:
+        List[Dict[str,str|int]]: A list of dictionaries where each dictionary
+        represents a repository.
+
+    """
     rosinstall_data = []
     for name in sorted(data['repositories'].keys()):
         values = data['repositories'][name]
