@@ -8,6 +8,15 @@ import yaml
 
 
 def sort_yaml(yaml_file):
+    """
+    Loads a YAML file, checks for an unsupported version, sorts its data, and
+    writes the sorted data back to the original file in a human-readable format.
+
+    Args:
+        yaml_file (str): A required input file path containing YAML data that needs
+            to be sorted.
+
+    """
     data = yaml.load(open(yaml_file, 'r'))
     if 'version' in data:
         print('This script does not support the new rosdistro yaml files', file=sys.stderr)
@@ -18,6 +27,15 @@ def sort_yaml(yaml_file):
 
 
 def sort_yaml_data(data):
+    """
+    Sorts the keys of a dictionary and recursively sorts the elements of lists
+    within the dictionary, ensuring that the data is ordered in a consistent manner.
+
+    Args:
+        data (Dict[str, Union[list, dict]]): Represented as a YAML data structure,
+            which can be a list or a dictionary.
+
+    """
     # sort lists
     if isinstance(data, list):
         data.sort()

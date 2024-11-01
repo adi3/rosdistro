@@ -42,6 +42,19 @@ def print_err(msg):
     printc('  ERR: ' + msg, 'red')
 
 def no_trailing_spaces(buf):
+    """
+    Checks a string for lines containing trailing spaces, prints an error message
+    for each occurrence, and returns `False` if any lines contain trailing spaces,
+    or `True` if the input string is clean.
+
+    Args:
+        buf (str): A string representing a buffer of text, which is split into
+            lines for processing.
+
+    Returns:
+        bool: True if no lines in the buffer have trailing spaces, False otherwise.
+
+    """
     clean = True
     for i, l in enumerate(buf.split('\n')):
         if re.search(r' $', l) is not None:
@@ -50,6 +63,25 @@ def no_trailing_spaces(buf):
     return clean
 
 def generic_parser(buf, cb):
+    """
+    Iterates over a text buffer line by line, applying a callback function to each
+    line based on its indentation level and content. It handles indentation,
+    strings, and errors, returning a boolean indicating whether the parsing process
+    was clean.
+
+    Args:
+        buf (str): Used to represent a string containing multiple lines of text.
+            It appears to be the input data to be parsed.
+        cb (Callable[[int, str, Dict[str, int]], bool]): Called a callback function.
+            It takes three arguments: the line number `i`, the line content `l`,
+            and a dictionary `opts` containing the level `lvl` and the start
+            position `s` of the current line. It returns a boolean value indicating
+            whether the line should be processed.
+
+    Returns:
+        bool: True if all lines in the buffer pass the callback test, and False otherwise.
+
+    """
     ilen = len(indent_atom)
     stringblock = False
     strlvl = 0
@@ -81,8 +113,40 @@ def generic_parser(buf, cb):
 
 
 def correct_indent(buf):
+    """
+    Checks a given buffer for correct indentation levels. It returns True if the
+    indentation is correct, False otherwise. It also prints error messages when
+    invalid indentation is found.
+
+    Args:
+        buf (str): Used as input to the `generic_parser` function.
+
+    Returns:
+        bool: Either True or False.
+
+    """
     ilen = len(indent_atom)
     def fun(i, l, o):
+        """
+        Checks indentation levels in a code snippet. It compares the current
+        indentation level with the previous one, ensuring it is not too much and
+        is a multiple of the indentation length. It also checks for invalid
+        indentation levels and reports errors if necessary.
+
+        Args:
+            i (int): Used as a line number, indicating the current line being
+                processed in a sequence of lines.
+            l (List[str]): Used as a context for the function to perform indentation
+                level checks.
+            o (Dict[str, int]): Represented as a Python dictionary containing at
+                least two key-value pairs: 's' and 'lvl'. The 's' key maps to an
+                integer representing the current indentation level and the 'lvl'
+                key maps to an integer representing the current level.
+
+        Returns:
+            bool: True when the input is valid and False when the input is invalid.
+
+        """
         s = o['s']
         olvl = fun.lvl
         lvl = o['lvl']
@@ -98,8 +162,40 @@ def correct_indent(buf):
     return generic_parser(buf, fun)
 
 def check_brackets(buf):
+    """
+    Parses a string buffer and checks if each line is in square brackets. It returns
+    False if a line is not in square brackets and its key is not in the 'excepts'
+    list, otherwise it returns True.
+
+    Args:
+        buf (str): Passed to the `generic_parser` function, which is not defined
+            within this snippet.
+
+    Returns:
+        bool: The result of the `generic_parser` function, indicating whether the
+        input buffer `buf` is valid according to the specified parsing rules.
+
+    """
     excepts = ['uri', 'md5sum']
     def fun(i, l, o):
+        """
+        Checks if a given line matches a specific pattern and if its first group
+        is not in a predefined list of exceptions. It returns `False` if the line
+        is not in square brackets and prints an error message. Otherwise, it returns
+        `True`.
+
+        Args:
+            i (int): Used as a line number for error reporting purposes.
+            l (str): Matched against a regular expression. It appears to be a line
+                of text that is being parsed, likely from a configuration file or
+                similar source.
+            o (Any): Unused, as it is not referenced within the function.
+
+        Returns:
+            bool: True if the input line matches the specified pattern and is not
+            in the excepts list, and False otherwise.
+
+        """
         m = re.match(r'^(?:' + indent_atom + r')*([^:]*):\s*(\w.*)$', l)
         if m is not None and m.groups()[0] not in excepts:
             print_err("list not in square brackets line %u" % (i+1))
@@ -108,7 +204,38 @@ def check_brackets(buf):
     return generic_parser(buf, fun)
 
 def check_order(buf):
+    """
+    Validates the order of items in a list within a configuration file. It checks
+    each line against the previous line, ensuring the items are in alphabetical
+    order and reports errors if not.
+
+    Args:
+        buf (str): Passed to the `generic_parser` function, which is not shown in
+            the code snippet.
+
+    Returns:
+        bool: Either True indicating that the input list is in alphabetical order
+        or False indicating that it is not.
+
+    """
     def fun(i, l, o):
+        """
+        Checks the input list against a set of rules: it verifies that each line
+        starts with a question mark, is alphabetically ordered, and maintains a
+        stack-based indentation structure consistent with a specified level.
+
+        Args:
+            i (int): Used as a line number, indicating the current line being processed.
+            l (str): Interpreted as a line of text. It appears to be a line from
+                a configuration or data file, possibly with indentation.
+            o (Dict[str, int]): Used to access the value of 'lvl' which is likely
+                used to track the current indentation level.
+
+        Returns:
+            bool: True if the input line is in alphabetical order and does not
+            contain a question mark, False otherwise.
+
+        """
         lvl = o['lvl']
         st = fun.namestack
         while len(st) > lvl + 1:
@@ -134,10 +261,29 @@ def check_order(buf):
 
 
 def main(fname):
+    """
+    Validates a YAML file by checking for trailing spaces, correct indentation,
+    item order, and building a YAML dictionary. It returns True if the file is
+    valid and False otherwise, also printing error messages if necessary.
+
+    Args:
+        fname (str): A filename that the function reads to process its contents.
+
+    Returns:
+        bool: True if the file is valid and False otherwise.
+
+    """
     with open(fname) as f:
         buf = f.read()
 
     def my_assert(val):
+        """
+        Sets a global variable `clean` to `False` if its argument `val` is `False`.
+
+        Args:
+            val (bool): Checked for its truthiness.
+
+        """
         if not val:
             my_assert.clean = False
     my_assert.clean = True

@@ -39,6 +39,15 @@ from rosdep2.sources_list import *
 
 
 def create_default_sources():
+    """
+    Loads default sources for ROS (Robot Operating System) from local files and
+    populates a list of `CachedDataSource` objects. It reads `index.yaml`,
+    `distribution.yaml`, and `rosdep` files to gather data for the sources.
+
+    Returns:
+        List[CachedDataSource]: A list of CachedDataSource objects.
+
+    """
     sources = []
     # get all rosdistro files
     basedir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
@@ -75,6 +84,25 @@ def create_default_sources():
 
 
 def check_duplicates(sources, os_name, os_codename):
+    """
+    Identifies duplicate dependencies in a ROS (Robot Operating System) package
+    by comparing dependencies across different operating systems and code names.
+    It returns True if no duplicates are found, and False otherwise.
+
+    Args:
+        sources (List[object]): Composed of source objects, likely representing
+            package sources for ROS (Robot Operating System).
+        os_name (str): Used to filter dependencies based on the operating system
+            name.
+        os_codename (str): Used in conjunction with `os_name` to check if a
+            dependency is defined for a specific operating system or a specific
+            version of it.
+
+    Returns:
+        bool: True if there are no duplicate dependencies in the sources and False
+        otherwise.
+
+    """
     # output debug info
     print('checking sources')
     for source in sources:
@@ -113,6 +141,19 @@ def check_duplicates(sources, os_name, os_codename):
 
 
 def main(infile):
+    """
+    Loads default sources, parses YAML files from a list of input files, and checks
+    for duplicate sources across different operating systems and versions using a
+    matcher.
+
+    Args:
+        infile (List[str]): Expected to contain filenames of YAML files that need
+            to be processed.
+
+    Returns:
+        bool: `True` if all duplicate sources are found correctly and `False` otherwise.
+
+    """
     sources = create_default_sources()
     matcher = DataSourceMatcher.create_default()
 

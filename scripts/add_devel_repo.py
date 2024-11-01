@@ -9,6 +9,20 @@ from sort_yaml import sort_yaml_data
 
 
 def add_devel_repository(yaml_file, name, vcs_type, url, version=None):
+    """
+    Adds a new repository to a ROS (Robot Operating System) .yaml file, specifying
+    the repository name, version control system, URL, and version.
+
+    Args:
+        yaml_file (str): The path to a YAML file that contains repository information.
+        name (str): Used to uniquely identify a repository within the .yaml file.
+        vcs_type (str): Used to specify the type of version control system for the
+            repository being added.
+        url (str): Used to specify the URL of the repository being added.
+        version (str | None): Optional. It specifies the version of the repository
+            to be added.
+
+    """
     data = yaml.load(open(yaml_file, 'r'))
     if data['type'] == 'gbp':
         add_devel_repository_fuerte(yaml_file, data, name, vcs_type, url, version)
@@ -36,6 +50,29 @@ def add_devel_repository(yaml_file, name, vcs_type, url, version=None):
 
 
 def add_devel_repository_fuerte(yaml_file, data, name, vcs_type, url, version):
+    """
+    Adds a new development repository to a YAML file. It validates the repository
+    type, checks for duplicate names, and updates the YAML data before writing it
+    back to the file.
+
+    Args:
+        yaml_file (str): Used to specify the name of the YAML file where the
+            repository information will be written to.
+        data (Dict[str, object]): Represented as a dictionary containing key-value
+            pairs, where 'repositories' is a key that holds another dictionary of
+            repository configurations.
+        name (str): Used to uniquely identify a repository within the YAML file.
+            It is used as a key in the `data['repositories']` dictionary.
+        vcs_type (str | None): Used to specify the type of version control system
+            used by the repository. It can be one of the supported types, such as
+            'git', 'svn', etc.
+        url (str): Used to specify the URL of the version control system where the
+            repository is located.
+        version (str | None): Used to specify the version of a repository. It is
+            required for all repository types except SVN, but when it is provided,
+            SVN repositories are invalid.
+
+    """
     if data['type'] != 'devel':
         raise RuntimeError('The passed .yaml file is not of type "devel"')
     if name in data['repositories']:
