@@ -9,6 +9,22 @@ from rosdistro import get_distribution_file, get_index
 
 
 def main(index_url, rosdistro_name):
+    """
+    Checks the distribution file of a ROS package for consistency and correctness,
+    specifically for local 'file://' URLs and incorrect GitHub repository URLs,
+    and returns a boolean indicating whether the check was successful.
+
+    Args:
+        index_url (str): Used to obtain a ROS distribution index from the specified
+            URL.
+        rosdistro_name (str): Designated to specify the name of the ROS distribution.
+
+    Returns:
+        bool: Either `True` if all checks pass, indicating that the distribution
+        file is valid, or `False` if any issues are found, indicating that the
+        distribution file is invalid.
+
+    """
     index = get_index(index_url)
     try:
         distribution_file = get_distribution_file(index, rosdistro_name)

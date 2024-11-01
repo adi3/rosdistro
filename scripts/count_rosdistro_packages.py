@@ -44,11 +44,41 @@ def get_all_commits(repo_dir, first_hash):
 
 
 def get_commit_date(repo_dir, commit):
+    """
+    Extracts the commit date from a specified commit in a Git repository located
+    at the given `repo_dir`. It uses the `git show` command to retrieve the commit
+    date in the format specified by the `--format` option.
+
+    Args:
+        repo_dir (str): Interpreted as the path to a Git repository directory.
+        commit (str): Used as a string to specify a commit hash or shorthand
+            reference in a Git repository, allowing the function to retrieve the
+            commit date.
+
+    Returns:
+        str: A string representing the commit date in the format specified by the
+        Git command used to retrieve it.
+
+    """
     date_str = subprocess.check_output('git -C %s show -s --format=%%ci %s' % (repo_dir, commit), shell=True).decode("utf-8").strip()
     return date_str
 
 
 def get_rosdistro_counts(index_path):
+    """
+    Fetches the package count for each valid ROS distribution from a given index
+    path, returning a list of counts. If a distribution is not found, it appends
+    0 to the list.
+
+    Args:
+        index_path (str): Used to specify the path to a ROS (Robot Operating System)
+            distribution index, which is used to retrieve distribution information.
+
+    Returns:
+        List[int]: A list of integers, where each integer represents the number
+        of release packages for a ROS distribution.
+
+    """
     i = rosdistro.get_index(index_path)
     results = []
     for d in valid_distros:

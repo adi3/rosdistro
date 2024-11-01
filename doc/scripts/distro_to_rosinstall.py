@@ -6,6 +6,18 @@ import yaml
 from rospkg.distro import load_distro, distro_uri
 
 def translate(distro, translate_dir):
+    """
+    Generates a ROSinstall file for each item in the repository list of a given
+    Linux distribution. It writes the file to a specified directory with a name
+    based on the item's name.
+
+    Args:
+        distro (str): Used to construct a URI for the distribution using the
+            `distro_uri` function, which is then passed to the `load_distro` function.
+        translate_dir (str): Defined as the directory where the translated rosinstall
+            files will be written.
+
+    """
     d = load_distro(distro_uri(distro))
     repo_list = d.get_stacks(True)
     for name, item in repo_list.iteritems():
