@@ -10,6 +10,21 @@ from rosdistro.dependency_walker import DependencyWalker
 
 
 def is_released(repository, dist_file):
+    """
+    Checks whether a given repository is released in a distribution file, indicating
+    that its release repository has a version.
+
+    Args:
+        repository (str): A repository name.
+        dist_file (Dict[str, Repository]): Accessed through its `repositories`
+            attribute, which is a dictionary-like object containing repository
+            names as keys and `Repository` objects as values.
+
+    Returns:
+        bool: True if the repository is found in the distribution file, has a
+        release repository, and the release repository has a version; False otherwise.
+
+    """
     return repository in dist_file.repositories and \
         dist_file.repositories[repository].release_repository is not None and \
         dist_file.repositories[repository].release_repository.version is not None

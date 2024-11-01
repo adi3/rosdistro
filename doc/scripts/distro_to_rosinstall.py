@@ -6,6 +6,18 @@ import yaml
 from rospkg.distro import load_distro, distro_uri
 
 def translate(distro, translate_dir):
+    """
+    Generates rosinstall files from a given distribution, writing them to a specified
+    directory. It handles repositories with SVN and non-SVN version control systems
+    differently, reflecting their unique configuration requirements.
+
+    Args:
+        distro (str): Used to identify a specific distribution of a package. It
+            is used to create a URI for loading the distribution's information.
+        translate_dir (str): Used to determine the directory where ROSinstall files
+            will be written.
+
+    """
     d = load_distro(distro_uri(distro))
     repo_list = d.get_stacks(True)
     for name, item in repo_list.iteritems():
