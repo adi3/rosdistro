@@ -9,6 +9,25 @@ from sort_yaml import sort_yaml_data
 
 
 def add_devel_repository(yaml_file, name, vcs_type, url, version=None):
+    """
+    Adds a new development repository to a given YAML file, which must be of type
+    'source' or 'gbp'. It updates the file with the new repository information and
+    adds it to the file's contents.
+
+    Args:
+        yaml_file (str): Used to specify the path to a YAML file that contains
+            repository definitions.
+        name (str): Used to identify a repository in the yaml file. It is a required
+            parameter and is used to check if a repository with the same name
+            already exists in the yaml file.
+        vcs_type (str): Used to specify the type of version control system, such
+            as 'git' or 'svn'.
+        url (str): Used to specify the Uniform Resource Locator of the version
+            control system repository that is being added.
+        version (str | None): Optional. It specifies the version of the repository
+            being added.
+
+    """
     data = yaml.load(open(yaml_file, 'r'))
     if data['type'] == 'gbp':
         add_devel_repository_fuerte(yaml_file, data, name, vcs_type, url, version)
@@ -36,6 +55,27 @@ def add_devel_repository(yaml_file, name, vcs_type, url, version=None):
 
 
 def add_devel_repository_fuerte(yaml_file, data, name, vcs_type, url, version):
+    """
+    Adds a new 'devel' repository to a given YAML file, ensuring the repository
+    is of the correct type and does not already exist in the file. It also updates
+    the YAML file with the new repository information.
+
+    Args:
+        yaml_file (str): Used to specify the path to a YAML file where the repository
+            data is stored.
+        data (Dict[str, Any]): Presumably a Python dictionary representing the
+            YAML file's content, specifically the repositories section.
+        name (str): Used to uniquely identify a repository within the YAML data.
+            It is used to check if a repository with the same name already exists
+            in the YAML data.
+        vcs_type (str): Used to specify the type of version control system used
+            by the repository.
+        url (str): Required to be passed to the function. It represents the URL
+            of the version control system repository.
+        version (str | None): Used to specify the version of the repository, but
+            its usage is restricted based on the value of the `vcs_type` parameter.
+
+    """
     if data['type'] != 'devel':
         raise RuntimeError('The passed .yaml file is not of type "devel"')
     if name in data['repositories']:

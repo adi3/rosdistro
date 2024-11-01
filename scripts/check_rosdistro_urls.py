@@ -9,6 +9,19 @@ from rosdistro import get_distribution_file, get_index
 
 
 def main(index_url, rosdistro_name):
+    """
+    Checks a ROS distribution index for compliance with certain repository URL and
+    type requirements, and returns a boolean indicating whether the check was successful.
+
+    Args:
+        index_url (str): Expected to be a URL of a ROS index.
+        rosdistro_name (str): Used to specify the name of a ROS (Robot Operating
+            System) distribution.
+
+    Returns:
+        bool: True if all repository URLs are valid, False otherwise.
+
+    """
     index = get_index(index_url)
     try:
         distribution_file = get_distribution_file(index, rosdistro_name)
