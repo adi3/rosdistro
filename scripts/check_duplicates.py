@@ -39,6 +39,15 @@ from rosdep2.sources_list import *
 
 
 def create_default_sources():
+    """
+    Populates a list of data sources for software dependencies, specifically for
+    ROS (Robot Operating System) distributions, by loading configuration files
+    from local directories and adding them to the list as `CachedDataSource` objects.
+
+    Returns:
+        List[CachedDataSource]: A list of cached data sources.
+
+    """
     sources = []
     # get all rosdistro files
     basedir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
@@ -75,6 +84,25 @@ def create_default_sources():
 
 
 def check_duplicates(sources, os_name, os_codename):
+    """
+    Verifies the presence of duplicate dependencies in a ROS (Robot Operating
+    System) package by checking for identical dependencies across different operating
+    system versions. It returns `True` if no duplicates are found, `False` otherwise.
+
+    Args:
+        sources (List[object]): Used to load the ROS package sources. It contains
+            a list of objects representing the sources, each with a `url` attribute
+            that is printed out.
+        os_name (str): Used to identify the operating system being checked for
+            duplicate dependencies.
+        os_codename (str): Checked along with the `os_name` to see if a dependency
+            in the Rosdep database has a specific version for the operating system.
+
+    Returns:
+        bool: True if there are no duplicate dependencies found in the sources,
+        and False otherwise.
+
+    """
     # output debug info
     print('checking sources')
     for source in sources:
@@ -113,6 +141,17 @@ def check_duplicates(sources, os_name, os_codename):
 
 
 def main(infile):
+    """
+    Loads default source data, reads ROSDep data from files, creates a data source
+    model, and checks for duplicate packages across different operating system configurations.
+
+    Args:
+        infile (List[str]): Used to specify a list of filenames to be processed.
+
+    Returns:
+        bool: True if all checks for duplicates pass, False otherwise.
+
+    """
     sources = create_default_sources()
     matcher = DataSourceMatcher.create_default()
 

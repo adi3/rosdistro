@@ -49,6 +49,19 @@ def print_err(msg):
 
 
 def no_trailing_spaces(buf):
+    """
+    Checks a given text buffer for lines with trailing spaces and prints an error
+    message for each occurrence. It returns `False` if any trailing spaces are
+    found, indicating the buffer is not clean.
+
+    Args:
+        buf (str): Representing the input buffer to be checked for trailing spaces.
+
+    Returns:
+        bool: True if all lines in the input buffer `buf` do not have trailing
+        spaces, and False otherwise.
+
+    """
     clean = True
     for i, l in enumerate(buf.split('\n')):
         if re.search(r' $', l) is not None:
@@ -58,6 +71,22 @@ def no_trailing_spaces(buf):
 
 
 def generic_parser(buf, cb):
+    """
+    Parses a string buffer, iterating line by line, and applies a callback function
+    to each line based on its indentation level and content, returning a boolean
+    indicating whether the parsing was successful.
+
+    Args:
+        buf (str): A string containing a multiline buffer of text to be parsed.
+        cb (Callable[[int, str, Dict[str, int]], bool]): Expected to be a callback
+            function that processes each line of the input buffer and returns a
+            boolean indicating whether the line has been successfully processed.
+
+    Returns:
+        bool: True if the parsing is successful and False otherwise, indicating
+        whether the buffer was successfully parsed without any errors.
+
+    """
     ilen = len(indent_atom)
     stringblock = False
     strlvl = 0
@@ -89,9 +118,41 @@ def generic_parser(buf, cb):
 
 
 def correct_indent(buf):
+    """
+    Parses a buffer of text to check for correct indentation levels, reporting
+    errors for lines with invalid or excessive indentation.
+
+    Args:
+        buf (str): Passed to the `generic_parser` function.
+
+    Returns:
+        bool: Either True, indicating that the indentation is correct, or False,
+        indicating that an error has been found.
+
+    """
     ilen = len(indent_atom)
 
     def fun(i, l, o):
+        """
+        Checks indentation levels in a document. It ensures that a line's indentation
+        level is consistent with the previous line's level, preventing excessive
+        indentation or invalid indentation levels.
+
+        Args:
+            i (int): Representing the current line number of the input being processed.
+            l (Dict[str, any]): Used as a dictionary to access the values 's' and
+                'lvl' with the keys 's' and 'lvl' respectively.
+            o (Dict[str, int]): Used to access specific key-value pairs, specifically
+                's' and 'lvl', where 's' represents indentation level and 'lvl'
+                represents the current level.
+
+        Returns:
+            bool|None: Either `True` if the input line is correctly indented
+            according to the given level, or `False` if it is not. If an error
+            occurs, `None` is not returned but instead, the function prints an
+            error message and returns `False`.
+
+        """
         s = o['s']
         olvl = fun.lvl
         lvl = o['lvl']
@@ -108,9 +169,38 @@ def correct_indent(buf):
 
 
 def check_brackets(buf):
+    """
+    Validates the presence of square brackets around a list in a given buffer of
+    text, excluding certain exceptions, and returns a generic parser result.
+
+    Args:
+        buf (str): Passed to the `generic_parser` function.
+
+    Returns:
+        bool: True if all lines in the input buffer pass the validation check and
+        false otherwise.
+
+    """
     excepts = ['uri', 'md5sum']
 
     def fun(i, l, o):
+        """
+        Checks if a line of code matches a specific pattern. It validates whether
+        the line contains a list not enclosed in square brackets and prints an
+        error message if it does, returning `False`. Otherwise, it returns `True`.
+
+        Args:
+            i (int): Used to index a line number in a file.
+            l (str): Matched against a regular expression r'^(?:' + indent_atom +
+                r')*([^:]*):\s*(\w.*)$'.
+            o (None): Unused in the given function.
+
+        Returns:
+            bool: True if the input line matches the specified pattern and is not
+            in the `excepts` list, or if the matched value is 'null'. Otherwise,
+            it returns False.
+
+        """
         m = re.match(r'^(?:' + indent_atom + r')*([^:]*):\s*(\w.*)$', l)
         if m is not None and m.groups()[0] not in excepts:
             if m.groups()[1] == 'null':
@@ -122,7 +212,40 @@ def check_brackets(buf):
 
 
 def check_order(buf):
+    """
+    Validates the order of items in a list within a YAML file. It checks each item
+    against the previous one, ensuring they are sorted alphabetically, and reports
+    any discrepancies.
+
+    Args:
+        buf (str): Passed to the `generic_parser` function.
+
+    Returns:
+        bool: Either True if all lines in the buffer are in alphabetical order or
+        False if any line is out of order.
+
+    """
     def fun(i, l, o):
+        """
+        Checks a YAML-formatted list for alphabetical order, tracking indentation
+        levels. It iterates through lines, parsing items with regular expressions
+        and comparing them to previous items at the same level, reporting errors
+        if the list is not in order.
+
+        Args:
+            i (int): Used to represent the current line number in the input data.
+                It is referenced in the error message "line %d" and "line %u".
+            l (str): Interpreted as a line of text. It is searched for patterns
+                using regular expressions to determine its validity and content.
+            o (Dict[str, str]): Named `lvl` within the function, indicating it
+                contains a level value.
+
+        Returns:
+            bool|str: Either `True` if the input line is valid, or `False` if it's
+            not in alphabetical order, or a string describing the error if the
+            input line starts with a question mark.
+
+        """
         lvl = o['lvl']
         st = fun.namestack
         while len(st) > lvl + 1:
@@ -149,10 +272,34 @@ def check_order(buf):
 
 
 def main(fname):
+    """
+    Validates the contents of a YAML file by checking for various formatting issues
+    and errors, including trailing spaces, incorrect indentation, non-bracket
+    package lists, and item order, before building a dictionary from the file.
+
+    Args:
+        fname (str): Required, representing the filename of a file that will be
+            opened and processed by the function.
+
+    Returns:
+        bool: True if the file contents pass all checks and False otherwise.
+
+    """
     with open(fname) as f:
         buf = f.read()
 
     def my_assert(val):
+        """
+        Checks a given value. If the value is False, it sets a class attribute
+        `clean` of the `my_assert` function to False, indicating a failure or an
+        error condition.
+
+        Args:
+            val (bool): Used to check the validity of a condition. It seems to be
+                a custom assertion function that sets a global variable `my_assert.clean`
+                to `False` if the condition is not met.
+
+        """
         if not val:
             my_assert.clean = False
     my_assert.clean = True
@@ -182,6 +329,18 @@ def main(fname):
         whitespace_whitelist = ["el capitan", "mountain lion"]
 
         def walk(node):
+            """
+            Traverses a nested data structure recursively, checking for whitespaces
+            in string nodes that are not in a whitelist and triggering an error
+            if such a string is found.
+
+            Args:
+                node (Union[Dict[str, Any], List[Any], str]): Represented as a
+                    value in a graph-like data structure. It can be a dictionary,
+                    a list, or a string, and is traversed recursively by the `walk`
+                    function.
+
+            """
             if isinstance(node, dict):
                 for key, value in node.items():
                     walk(key)

@@ -36,6 +36,22 @@ from github import Github, UnknownObjectException
 
 
 def detect_repo_hook(repo, cb_url):
+    """
+    Checks if a given repository contains a webhook with a specified callback URL.
+    It iterates through the repository's hooks and returns True if a match is
+    found, False otherwise.
+
+    Args:
+        repo (GitRepository): Expected to have a `get_hooks` method, which returns
+            a list of hooks in the repository.
+        cb_url (str): Used to store a URL, specifically a webhook URL from a
+            third-party service, in this case, a code host.
+
+    Returns:
+        bool: True if a webhook with the specified `cb_url` is found in the
+        repository, and False otherwise.
+
+    """
     for hook in repo.get_hooks():
         if hook.config.get('url') == cb_url:
             return True
@@ -43,11 +59,55 @@ def detect_repo_hook(repo, cb_url):
 
 
 class GHPRBHookDetector(object):
+    """
+    Detects whether a GitHub repository has a pull request build hook configured,
+    based on the repository's permissions and the presence of a manual hook
+    configuration. It also logs warnings and errors as needed.
+
+    Attributes:
+        callback_url (str): Stored in the instance of the class. It represents the
+            URL to which the GitHub webhook sends notifications.
+        gh (GithubInstance): Instantiated with a Github user and token. It provides
+            a connection to the GitHub API.
+
+    """
     def __init__(self, github_user, github_token, callback_url):
+        """
+        Initializes the object with the GitHub user, token, and callback URL,
+        setting up a connection to GitHub using the `Github` class from the `github`
+        library and storing the callback URL and the GitHub connection for later
+        use.
+
+        Args:
+            github_user (str): Used to authenticate with the GitHub API, representing
+                the username or email address of a GitHub account.
+            github_token (str): Required to authenticate with the GitHub API,
+                replacing the need for a username and password.
+            callback_url (str): Assigned to the instance variable `self.callback_url`.
+                It represents the URL to which the GitHub API will redirect the
+                user after authorization.
+
+        """
         self.callback_url = callback_url
         self.gh = Github(github_user, github_token)
 
     def get_repo(self, username, reponame):
+        """
+        Retrieves a GitHub repository based on a given username and repository
+        name, handling exceptions that occur when the repository does not exist
+        or access is denied.
+
+        Args:
+            username (str): Used to identify a GitHub user. It is a required
+                parameter that must match the actual username of a valid GitHub user.
+            reponame (str): Used to specify the name of the repository to be
+                retrieved from the GitHub user with the given `username`.
+
+        Returns:
+            Any: Either an instance of `Repository` if the repository is found,
+            or `None` if the repository does not exist or access to it is denied.
+
+        """
         try:
             repo = self.gh.get_user(username).get_repo(reponame)
         except UnknownObjectException as ex:
@@ -60,6 +120,25 @@ class GHPRBHookDetector(object):
         return repo
 
     def check_repo_for_access(self, repo, errors, strict=False):
+        """
+        Verifies if a GitHub repository has access to set up pull request hooks
+        or if it has admin access. It also checks for push access and provides a
+        warning if hooks cannot be verified but is not strict.
+
+        Args:
+            repo (object.): Representing a repository.
+            errors (List[str]): Used to accumulate any error messages encountered
+                during the execution of the function.
+            strict (bool): Determining whether to fail or pass when push access
+                is detected but the manual hook configuration cannot be verified
+                due to an error.
+
+        Returns:
+            bool|None: `True` if push access is detected and either a hook is
+            present or admin access exists, or if strict mode is False and a hook
+            is not present but push access exists.
+
+        """
         push_access = repo.permissions.push
         admin_access = repo.permissions.admin
         try:
@@ -89,6 +168,32 @@ class GHPRBHookDetector(object):
 
 def check_hooks_on_repo(user, repo, errors, hook_user='ros-pull-request-builder',
         callback_url='http://build.ros.org/ghprbhook/', token=None, strict=False):
+    """
+    Checks if a GitHub repository has the necessary permissions to set up pull
+    request builds, using the GHPRBHookDetector to verify access.
+
+    Args:
+        user (str): Required to uniquely identify a GitHub user. It is the namespace
+            of the repository to be checked.
+        repo (str): Required. It represents the name of a GitHub repository to be
+            checked for hook access.
+        errors (List[str]): Passed to the `check_repo_for_access` method of the
+            `GHPRBHookDetector` class.
+        hook_user (str): Defaulted to `'ros-pull-request-builder'`. It is used to
+            initialize a `GHPRBHookDetector` object.
+        callback_url (str): Defaulted to 'http://build.ros.org/ghprbhook/'. It is
+            used by the `GHPRBHookDetector` class to initialize the callback URL
+            for the GitHub hook.
+        token (str | None): Optional, indicating that it can be omitted when calling
+            the function. It is used to authenticate the GitHub repository.
+        strict (bool): Set to False by default. It influences the behavior of the
+            `check_repo_for_access` method of the `GHPRBHookDetector` class.
+
+    Returns:
+        bool: `True` if the repository has sufficient permissions to set up pull
+        request builds, and `False` otherwise.
+
+    """
     ghprb_detector = GHPRBHookDetector(hook_user, token, callback_url)
     test_repo = ghprb_detector.get_repo(user, repo)
 

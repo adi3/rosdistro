@@ -9,6 +9,18 @@ from sort_yaml import sort_yaml_data
 
 
 def add_release_repository(yaml_file, name, url, version):
+    """
+    Adds a release repository to a YAML file of type 'gbp'. If the file is not of
+    type 'gbp', it calls a specific function for 'gbp' type files and raises a
+    RuntimeError for unsupported file types.
+
+    Args:
+        yaml_file (str): Used to specify the path to a YAML file.
+        name (str): Used to specify the name of a release repository.
+        url (str): Used to specify the URL of the release repository to be added.
+        version (str): Passed to the `add_release_repository_fuerte` function.
+
+    """
     data = yaml.load(open(yaml_file, 'r'))
     if data['type'] == 'gbp':
         add_release_repository_fuerte(yaml_file, data, name, url, version)
@@ -18,6 +30,26 @@ def add_release_repository(yaml_file, name, url, version):
 
 
 def add_release_repository_fuerte(yaml_file, data, name, url, version):
+    """
+    Adds a new repository to a YAML file, ensuring its name is unique and updating
+    the file with the latest data. It does this by modifying the provided data and
+    then writing it back to the specified YAML file.
+
+    Args:
+        yaml_file (str): Used to specify the name of the YAML file where the
+            repository data will be updated.
+        data (Dict[str, Any]): Represented as the current state of the YAML data
+            being modified, which contains a key named 'repositories' to store a
+            collection of repositories.
+        name (str): Used as a key to uniquely identify a repository within the
+            YAML data. It is checked to ensure it is not already present in the
+            'repositories' section of the YAML data.
+        url (str): Assigned to the 'url' key of a dictionary within the 'repositories'
+            key of the 'data' dictionary. It represents a URL of a repository.
+        version (str): Used to specify the version of the repository being added
+            to the .yaml file.
+
+    """
     if name in data['repositories']:
         raise RuntimeError('Repository with name "%s" is already in the .yaml file' % name)
     data['repositories'][name] = {
